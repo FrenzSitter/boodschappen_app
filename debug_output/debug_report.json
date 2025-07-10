@@ -1,0 +1,34 @@
+{
+  "timestamp": "2025-07-10T22:52:41.777507",
+  "debug_session_id": "debug_1752180761",
+  "environment": {
+    "supabase_url_configured": false,
+    "supabase_key_configured": false,
+    "checkjebon_url": "https://api.checkjebon.nl"
+  },
+  "test_results": {
+    "environment_variables": {
+      "SUPABASE_URL": null,
+      "SUPABASE_KEY": null,
+      "CHECKJEBON_URL": "https://api.checkjebon.nl",
+      "REDIS_URL": null,
+      "LOG_LEVEL": "INFO"
+    },
+    "checkjebon_api_error": {
+      "status": "failed",
+      "api_url": "https://api.checkjebon.nl",
+      "error": "No working endpoints found",
+      "timestamp": "2025-07-10T22:52:41.776257"
+    },
+    "network_connectivity": {
+      "CheckjeBon API": "error: HTTPSConnectionPool(host='api.checkjebon.nl', port=443): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x115d41400>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))",
+      "Google DNS": "connected",
+      "Internet": "connected"
+    }
+  },
+  "recommendations": [
+    "Configure SUPABASE_URL environment variable",
+    "Configure SUPABASE_KEY environment variable"
+  ],
+  "next_steps": []
+}

@@ -1,0 +1,7 @@
+{
+  "SUPABASE_URL": null,
+  "SUPABASE_KEY": null,
+  "CHECKJEBON_URL": "https://api.checkjebon.nl",
+  "REDIS_URL": null,
+  "LOG_LEVEL": "INFO"
+}

@@ -1,0 +1,5 @@
+{
+  "CheckjeBon API": "error: HTTPSConnectionPool(host='api.checkjebon.nl', port=443): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x115d41400>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))",
+  "Google DNS": "connected",
+  "Internet": "connected"
+}

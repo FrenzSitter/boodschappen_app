@@ -1,0 +1,41 @@
+[
+  {
+    "id": "5bd3d225-e934-4d0f-8a74-40052a6c0302",
+    "product_id": "9fa74648-e035-45c8-917e-10e4b0b3d57a",
+    "supermarket_id": "ah-001",
+    "price": 10.52,
+    "price_per_unit": 10.04,
+    "original_price": 10.52,
+    "is_on_sale": false,
+    "discount_percentage": 24,
+    "price_date": "2025-07-10",
+    "import_batch_id": "manual_20250710_231430",
+    "is_available": true
+  },
+  {
+    "id": "40d5996f-2fb6-4e29-8c15-960bdeb20906",
+    "product_id": "9fa74648-e035-45c8-917e-10e4b0b3d57a",
+    "supermarket_id": "jumbo-001",
+    "price": 16.1,
+    "price_per_unit": 16.96,
+    "original_price": 16.1,
+    "is_on_sale": false,
+    "discount_percentage": 20,
+    "price_date": "2025-07-10",
+    "import_batch_id": "manual_20250710_231430",
+    "is_available": true
+  },
+  {
+    "id": "da4f4206-8820-4428-ae85-a7ec598bf661",
+    "product_id": "9fa74648-e035-45c8-917e-10e4b0b3d57a",
+    "supermarket_id": "lidl-001",
+    "price": 13.37,
+    "price_per_unit": 13.39,
+    "original_price": 13.37,
+    "is_on_sale": false,
+    "discount_percentage": 0,
+    "price_date": "2025-07-10",
+    "import_batch_id": "manual_20250710_231430",
+    "is_available": true
+  }
+]

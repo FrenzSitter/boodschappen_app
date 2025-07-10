@@ -1,0 +1,373 @@
+{
+  "timestamp": "2025-07-10T23:38:18.158554",
+  "system_info": {
+    "platform": "macOS-15.5-arm64-arm-64bit-Mach-O",
+    "python_version": "3.13.0",
+    "architecture": [
+      "64bit",
+      "Mach-O"
+    ],
+    "processor": "arm",
+    "hostname": "Bigmac-Pro.local",
+    "cpu_count": 12,
+    "memory_total": 34359738368,
+    "disk_usage": 506713976832,
+    "timestamp": "2025-07-10T23:38:18.068927"
+  },
+  "overall_status": "POOR",
+  "success_rate": 39.39,
+  "summary": {
+    "total_checks": 33,
+    "passed": 13,
+    "failed": 4,
+    "warnings": 5,
+    "info": 9,
+    "skipped": 2
+  },
+  "performance": {
+    "average_benchmark_time": 0.04,
+    "benchmark_count": 2
+  },
+  "results": [
+    {
+      "name": "Environment Variable: SUPABASE_URL",
+      "status": "CheckStatus.FAIL",
+      "message": "Required variable SUPABASE_URL is not set",
+      "details": {
+        "description": "Supabase project URL"
+      },
+      "solution": "Set SUPABASE_URL environment variable:\nexport SUPABASE_URL=\"https://your-project.supabase.co\"",
+      "benchmark": null
+    },
+    {
+      "name": "Environment Variable: SUPABASE_KEY",
+      "status": "CheckStatus.FAIL",
+      "message": "Required variable SUPABASE_KEY is not set",
+      "details": {
+        "description": "Supabase service role key"
+      },
+      "solution": "Set SUPABASE_KEY environment variable:\nexport SUPABASE_KEY=\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...\"",
+      "benchmark": null
+    },
+    {
+      "name": "Optional Variable: SUPABASE_TEST_URL",
+      "status": "CheckStatus.INFO",
+      "message": "SUPABASE_TEST_URL is not set (optional)",
+      "details": {
+        "description": "Supabase test environment URL",
+        "optional": true
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Optional Variable: SUPABASE_TEST_KEY",
+      "status": "CheckStatus.INFO",
+      "message": "SUPABASE_TEST_KEY is not set (optional)",
+      "details": {
+        "description": "Supabase test environment key",
+        "optional": true
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Optional Variable: CHECKJEBON_API_KEY",
+      "status": "CheckStatus.INFO",
+      "message": "CHECKJEBON_API_KEY is not set (optional)",
+      "details": {
+        "description": "CheckjeBon API key for data access",
+        "optional": true
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Optional Variable: REDIS_URL",
+      "status": "CheckStatus.INFO",
+      "message": "REDIS_URL is not set (optional)",
+      "details": {
+        "description": "Redis connection URL for caching",
+        "optional": true
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Optional Variable: AWS_ACCESS_KEY_ID",
+      "status": "CheckStatus.INFO",
+      "message": "AWS_ACCESS_KEY_ID is not set (optional)",
+      "details": {
+        "description": "AWS access key for S3 backups",
+        "optional": true
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Optional Variable: AWS_SECRET_ACCESS_KEY",
+      "status": "CheckStatus.INFO",
+      "message": "AWS_SECRET_ACCESS_KEY is not set (optional)",
+      "details": {
+        "description": "AWS secret key for S3 backups",
+        "optional": true
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Optional Variable: GITHUB_TOKEN",
+      "status": "CheckStatus.INFO",
+      "message": "GITHUB_TOKEN is not set (optional)",
+      "details": {
+        "description": "GitHub token for CI/CD operations",
+        "optional": true
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Environment Variables Summary",
+      "status": "CheckStatus.FAIL",
+      "message": "Some required environment variables are missing",
+      "details": {},
+      "solution": "Configure all required environment variables before proceeding",
+      "benchmark": null
+    },
+    {
+      "name": ".env File",
+      "status": "CheckStatus.WARN",
+      "message": ".env file not found",
+      "details": {},
+      "solution": "Create .env file from .env.example:\ncp .env.example .env\n# Then edit .env with your values",
+      "benchmark": null
+    },
+    {
+      "name": "Python Package: supabase",
+      "status": "CheckStatus.PASS",
+      "message": "supabase is installed (version: 2.16.0)",
+      "details": {
+        "version": "2.16.0",
+        "critical": true
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Python Package: requests",
+      "status": "CheckStatus.PASS",
+      "message": "requests is installed (version: 2.32.3)",
+      "details": {
+        "version": "2.32.3",
+        "critical": true
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Python Package: pandas",
+      "status": "CheckStatus.PASS",
+      "message": "pandas is installed (version: 2.2.3)",
+      "details": {
+        "version": "2.2.3",
+        "critical": false
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Python Package: psycopg2",
+      "status": "CheckStatus.WARN",
+      "message": "Optional package psycopg2 is not installed",
+      "details": {},
+      "solution": "Install psycopg2: pip install psycopg2",
+      "benchmark": null
+    },
+    {
+      "name": "Python Package: boto3",
+      "status": "CheckStatus.WARN",
+      "message": "Optional package boto3 is not installed",
+      "details": {},
+      "solution": "Install boto3: pip install boto3",
+      "benchmark": null
+    },
+    {
+      "name": "Python Package: aiohttp",
+      "status": "CheckStatus.PASS",
+      "message": "aiohttp is installed (version: 3.10.10)",
+      "details": {
+        "version": "3.10.10",
+        "critical": true
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Requirements File",
+      "status": "CheckStatus.PASS",
+      "message": "requirements.txt found with 22 packages",
+      "details": {
+        "package_count": 22
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Network: Google DNS",
+      "status": "CheckStatus.PASS",
+      "message": "DNS resolution working",
+      "details": {
+        "response_time_ms": 1.87
+      },
+      "solution": "",
+      "benchmark": 0.00186920166015625
+    },
+    {
+      "name": "Network: Supabase API",
+      "status": "CheckStatus.SKIP",
+      "message": "URL not configured for Supabase API",
+      "details": {
+        "description": "Database connectivity"
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Network: CheckjeBon API",
+      "status": "CheckStatus.WARN",
+      "message": "Cannot connect to CheckjeBon API",
+      "details": {},
+      "solution": "Check URL configuration and network connectivity",
+      "benchmark": null
+    },
+    {
+      "name": "Network: GitHub API",
+      "status": "CheckStatus.PASS",
+      "message": "HTTP 200 - Connectivity OK",
+      "details": {
+        "status_code": 200,
+        "response_time_ms": 77.73,
+        "url": "https://api.github.com"
+      },
+      "solution": "",
+      "benchmark": 0.07773208618164062
+    },
+    {
+      "name": "Supabase Connection",
+      "status": "CheckStatus.FAIL",
+      "message": "Supabase credentials not configured",
+      "details": {},
+      "solution": "Set SUPABASE_URL and SUPABASE_KEY environment variables",
+      "benchmark": null
+    },
+    {
+      "name": "External Service: GitHub API",
+      "status": "CheckStatus.INFO",
+      "message": "GitHub token not configured (optional for CI/CD)",
+      "details": {},
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "External Service: AWS S3",
+      "status": "CheckStatus.INFO",
+      "message": "AWS credentials not configured (optional for backups)",
+      "details": {},
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Directory: logs",
+      "status": "CheckStatus.PASS",
+      "message": "Directory exists with write permissions (4 files, 31535 bytes)",
+      "details": {
+        "path": "/Users/bigmac/boodschappen_app/logs",
+        "file_count": 4,
+        "size_bytes": 31535,
+        "purpose": "Application logging"
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Directory: manual_import_data",
+      "status": "CheckStatus.PASS",
+      "message": "Directory exists with write permissions (4 files, 2595 bytes)",
+      "details": {
+        "path": "/Users/bigmac/boodschappen_app/manual_import_data",
+        "file_count": 4,
+        "size_bytes": 2595,
+        "purpose": "Import data storage"
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Directory: manual_import_backups",
+      "status": "CheckStatus.PASS",
+      "message": "Directory exists with write permissions (0 files, 0 bytes)",
+      "details": {
+        "path": "/Users/bigmac/boodschappen_app/manual_import_backups",
+        "file_count": 0,
+        "size_bytes": 0,
+        "purpose": "Database backups"
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Directory: manual_import_reports",
+      "status": "CheckStatus.PASS",
+      "message": "Directory exists with write permissions (1 files, 509 bytes)",
+      "details": {
+        "path": "/Users/bigmac/boodschappen_app/manual_import_reports",
+        "file_count": 1,
+        "size_bytes": 509,
+        "purpose": "Import reports"
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Directory: debug_output",
+      "status": "CheckStatus.PASS",
+      "message": "Directory exists with write permissions (4 files, 1883 bytes)",
+      "details": {
+        "path": "/Users/bigmac/boodschappen_app/debug_output",
+        "file_count": 4,
+        "size_bytes": 1883,
+        "purpose": "Debug information"
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Disk Space",
+      "status": "CheckStatus.PASS",
+      "message": "Sufficient disk space: 471.9 GB free (1.1% used)",
+      "details": {
+        "free_gb": 471.91,
+        "total_gb": 926.35,
+        "used_percent": 1.13
+      },
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Performance Benchmarks",
+      "status": "CheckStatus.SKIP",
+      "message": "Skipped in quick mode",
+      "details": {},
+      "solution": "",
+      "benchmark": null
+    },
+    {
+      "name": "Security: SSL Certificate (https://api.checkjebon.nl)",
+      "status": "CheckStatus.WARN",
+      "message": "Could not verify SSL certificate: [Errno 8] nodename nor servname provided, or not known",
+      "details": {},
+      "solution": "",
+      "benchmark": null
+    }
+  ]
+}

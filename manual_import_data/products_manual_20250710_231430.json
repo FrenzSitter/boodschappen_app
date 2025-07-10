@@ -1,0 +1,16 @@
+[
+  {
+    "id": "9fa74648-e035-45c8-917e-10e4b0b3d57a",
+    "name": "Melk Vol 1L",
+    "normalized_name": "melk vol 1l",
+    "brand": "AH Basic",
+    "size_text": "1 liter",
+    "ean": "8710398000000",
+    "category_id": null,
+    "image_url": "https://example.com/melk.jpg",
+    "is_active": true,
+    "description": "Volle melk van Nederlandse koeien",
+    "unit_size": 1.0,
+    "supermarket_id": null
+  }
+]

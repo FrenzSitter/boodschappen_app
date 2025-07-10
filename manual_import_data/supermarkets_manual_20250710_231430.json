@@ -1,0 +1,22 @@
+[
+  {
+    "id": "0ae1afa8-00b2-4043-8efc-9d1ceb7a11ea",
+    "name": "Albert Heijn",
+    "slug": "albert-heijn",
+    "logo_url": "https://example.com/ah-logo.png",
+    "color_primary": "#0066CC",
+    "website_url": "https://ah.nl",
+    "api_endpoint": "https://api.ah.nl",
+    "is_active": true
+  },
+  {
+    "id": "dc481d76-5d09-47be-b151-7d4dd01afd27",
+    "name": "Jumbo",
+    "slug": "jumbo",
+    "logo_url": "https://example.com/jumbo-logo.png",
+    "color_primary": "#FFCC00",
+    "website_url": "https://jumbo.com",
+    "api_endpoint": "https://api.jumbo.com",
+    "is_active": true
+  }
+]

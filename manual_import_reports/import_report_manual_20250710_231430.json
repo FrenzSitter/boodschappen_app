@@ -1,0 +1,21 @@
+{
+  "import_id": "manual_20250710_231430",
+  "timestamp": "2025-07-10T23:14:30.999906",
+  "dry_run": true,
+  "interactive": false,
+  "conflict_resolution": "ask_user",
+  "reports": [
+    {
+      "step": "download",
+      "start_time": "2025-07-10 23:14:30.999201",
+      "end_time": "2025-07-10 23:14:30.999869",
+      "status": "completed",
+      "records_processed": 8,
+      "records_inserted": 0,
+      "records_updated": 0,
+      "records_skipped": 0,
+      "errors": [],
+      "warnings": []
+    }
+  ]
+}

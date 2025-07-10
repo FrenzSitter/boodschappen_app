@@ -1,0 +1,18 @@
+[
+  {
+    "id": "94382a5b-5375-4fba-9585-039a5668ee53",
+    "name": "Zuivel & Eieren",
+    "slug": "zuivel-eieren",
+    "parent_id": null,
+    "description": "Melkproducten en eieren",
+    "is_active": true
+  },
+  {
+    "id": "c631f071-12f0-4aee-be4e-1e85b3004d77",
+    "name": "Groente & Fruit",
+    "slug": "groente-fruit",
+    "parent_id": null,
+    "description": "Verse groenten en fruit",
+    "is_active": true
+  }
+]
