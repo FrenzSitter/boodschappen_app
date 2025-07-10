@@ -1,0 +1,42 @@
+[Unit]
+Description=Price History Monitoring Service
+After=network.target
+Requires=network.target
+
+[Service]
+Type=simple
+User=price-history
+Group=price-history
+WorkingDirectory=/opt/price-history
+Environment=PYTHONPATH=/opt/price-history
+Environment=ENVIRONMENT=production
+EnvironmentFile=/opt/price-history/.env
+ExecStart=/opt/price-history/.venv/bin/python -m monitoring_scheduler
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=60
+StartLimitInterval=600
+StartLimitBurst=3
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/price-history/logs /opt/price-history/backups
+RemoveIPC=yes
+RestrictSUIDSGID=yes
+
+# Resource limits
+LimitNOFILE=4096
+LimitNPROC=1024
+MemoryLimit=256M
+CPUQuota=50%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=price-history-monitor
+
+[Install]
+WantedBy=multi-user.target

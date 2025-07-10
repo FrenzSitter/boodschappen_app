@@ -1,0 +1,78 @@
+{
+  "freshness_threshold_hours": 48,
+  "price_change_threshold": 0.20,
+  "min_record_count": 100,
+  "max_record_count": 1000000,
+  "required_fields": [
+    "name",
+    "price",
+    "supermarket_id"
+  ],
+  "price_range": {
+    "min": 0.01,
+    "max": 1000.00
+  },
+  "alert_thresholds": {
+    "missing_prices_pct": 5.0,
+    "invalid_formats_pct": 2.0,
+    "record_count_change_pct": 20.0,
+    "stale_data_pct": 10.0,
+    "significant_price_changes_pct": 15.0
+  },
+  "notification_settings": {
+    "email_on_failure": true,
+    "email_on_warning": false,
+    "email_on_success": false,
+    "slack_webhook_url": "",
+    "discord_webhook_url": ""
+  },
+  "data_quality_rules": {
+    "product_name_min_length": 3,
+    "product_name_max_length": 500,
+    "brand_name_max_length": 100,
+    "size_text_max_length": 200,
+    "checkjebon_link_required": true,
+    "supermarket_validation": true
+  },
+  "monitoring_intervals": {
+    "freshness_check_hours": 6,
+    "integrity_check_hours": 24,
+    "price_check_hours": 12,
+    "record_count_check_hours": 24
+  },
+  "report_settings": {
+    "generate_html_report": true,
+    "generate_json_report": true,
+    "include_detailed_errors": true,
+    "include_recommendations": true,
+    "retention_days": 30
+  },
+  "supermarket_validation": {
+    "required_supermarkets": [
+      "albert-heijn",
+      "jumbo",
+      "plus",
+      "coop"
+    ],
+    "check_supermarket_data_freshness": true,
+    "min_products_per_supermarket": 50
+  },
+  "category_validation": {
+    "required_categories": [
+      "zuivel-eieren",
+      "brood-gebak",
+      "groente-fruit",
+      "vlees-vis-vegetarisch",
+      "dranken"
+    ],
+    "check_category_distribution": true,
+    "min_products_per_category": 10
+  },
+  "price_validation": {
+    "check_price_consistency": true,
+    "flag_zero_prices": true,
+    "flag_duplicate_prices": false,
+    "price_trend_analysis": true,
+    "compare_with_previous_prices": true
+  }
+}

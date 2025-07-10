@@ -1,0 +1,42 @@
+[Unit]
+Description=Price History API Service
+After=network.target
+Requires=network.target
+
+[Service]
+Type=simple
+User=price-history
+Group=price-history
+WorkingDirectory=/opt/price-history
+Environment=PYTHONPATH=/opt/price-history
+Environment=ENVIRONMENT=production
+EnvironmentFile=/opt/price-history/.env
+ExecStart=/opt/price-history/.venv/bin/python -m uvicorn price_history_api:app --host 0.0.0.0 --port 8000
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/price-history/logs /opt/price-history/backups
+RemoveIPC=yes
+RestrictSUIDSGID=yes
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+MemoryLimit=1G
+CPUQuota=200%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=price-history-api
+
+[Install]
+WantedBy=multi-user.target

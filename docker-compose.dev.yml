@@ -1,0 +1,97 @@
+# Docker Compose configuration for Development Environment
+# ======================================================
+
+version: '3.8'
+
+services:
+  # Development API service
+  price-history-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: price-history-api-dev
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=development
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=DEBUG
+      - CACHE_TTL=60
+      - RATE_LIMIT=1000
+      - DEBUG=true
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+    networks:
+      - price-history-dev-network
+    command: ["python", "-m", "uvicorn", "price_history_api:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development Redis
+  redis:
+    image: redis:7-alpine
+    container_name: price-history-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - price-history-dev-network
+    command: redis-server --appendonly yes
+
+  # Development PostgreSQL (if needed for local testing)
+  postgres:
+    image: postgres:15-alpine
+    container_name: price-history-postgres-dev
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=price_history_dev
+      - POSTGRES_USER=dev_user
+      - POSTGRES_PASSWORD=dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - price-history-dev-network
+
+  # Test runner
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: price-history-tests
+    environment:
+      - ENVIRONMENT=test
+      - SUPABASE_URL=${SUPABASE_TEST_URL}
+      - SUPABASE_KEY=${SUPABASE_TEST_KEY}
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=WARNING
+    volumes:
+      - .:/app
+      - ./test-results:/app/test-results
+    networks:
+      - price-history-dev-network
+    depends_on:
+      - redis
+      - postgres
+    command: ["python", "-m", "pytest", "-v", "--cov=.", "--cov-report=html:/app/test-results/coverage"]
+
+volumes:
+  postgres_dev_data:
+
+networks:
+  price-history-dev-network:
+    driver: bridge

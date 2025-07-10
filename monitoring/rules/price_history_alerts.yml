@@ -1,0 +1,231 @@
+# Alert Rules for Price History System
+# ====================================
+
+groups:
+  - name: price_history_system
+    rules:
+      # API Health Alerts
+      - alert: APIDown
+        expr: up{job="price-history-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "Price History API is down"
+          description: "The Price History API has been down for more than 1 minute."
+          
+      - alert: APIHighResponseTime
+        expr: http_request_duration_seconds{quantile="0.95"} > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "API response time is high"
+          description: "95th percentile response time is above 5 seconds for 5 minutes."
+          
+      - alert: APIHighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "High API error rate"
+          description: "API error rate is above 10% for 5 minutes."
+
+  - name: price_history_data
+    rules:
+      # Data Freshness Alerts
+      - alert: DataStale
+        expr: price_history_data_freshness_hours > 25
+        for: 1m
+        labels:
+          severity: warning
+          service: import
+        annotations:
+          summary: "Price history data is stale"
+          description: "Data hasn't been updated for {{ $value }} hours."
+          
+      - alert: DataCriticallyStale
+        expr: price_history_data_freshness_hours > 48
+        for: 1m
+        labels:
+          severity: critical
+          service: import
+        annotations:
+          summary: "Price history data is critically stale"
+          description: "Data hasn't been updated for {{ $value }} hours."
+          
+      # Import Alerts
+      - alert: ImportFailed
+        expr: price_history_import_success == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: import
+        annotations:
+          summary: "Price history import failed"
+          description: "The latest import job has failed."
+          
+      - alert: ImportLowVolume
+        expr: price_history_import_records_processed < 1000
+        for: 1m
+        labels:
+          severity: warning
+          service: import
+        annotations:
+          summary: "Low import volume"
+          description: "Import processed only {{ $value }} records, expected > 1000."
+          
+      # Data Quality Alerts
+      - alert: DataQualityLow
+        expr: price_history_data_quality_score < 80
+        for: 5m
+        labels:
+          severity: warning
+          service: data
+        annotations:
+          summary: "Data quality score is low"
+          description: "Data quality score is {{ $value }}%, below 80% threshold."
+          
+      - alert: DataQualityCritical
+        expr: price_history_data_quality_score < 60
+        for: 1m
+        labels:
+          severity: critical
+          service: data
+        annotations:
+          summary: "Data quality score is critical"
+          description: "Data quality score is {{ $value }}%, below 60% threshold."
+
+  - name: price_history_backup
+    rules:
+      # Backup Alerts
+      - alert: BackupFailed
+        expr: price_history_backup_success == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: backup
+        annotations:
+          summary: "Backup failed"
+          description: "The latest backup job has failed."
+          
+      - alert: BackupOverdue
+        expr: price_history_backup_hours_since_last > 26
+        for: 1m
+        labels:
+          severity: warning
+          service: backup
+        annotations:
+          summary: "Backup is overdue"
+          description: "No backup has been completed for {{ $value }} hours."
+          
+      - alert: BackupCriticallyOverdue
+        expr: price_history_backup_hours_since_last > 48
+        for: 1m
+        labels:
+          severity: critical
+          service: backup
+        annotations:
+          summary: "Backup is critically overdue"
+          description: "No backup has been completed for {{ $value }} hours."
+
+  - name: price_history_infrastructure
+    rules:
+      # System Resource Alerts
+      - alert: HighCPUUsage
+        expr: rate(cpu_usage_seconds_total[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is above 80% for 10 minutes."
+          
+      - alert: HighMemoryUsage
+        expr: memory_usage_bytes / memory_total_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 90% for 5 minutes."
+          
+      - alert: DiskSpaceLow
+        expr: disk_free_bytes / disk_total_bytes < 0.1
+        for: 1m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is below 10% on {{ $labels.mountpoint }}."
+          
+      - alert: DiskSpaceCritical
+        expr: disk_free_bytes / disk_total_bytes < 0.05
+        for: 1m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Critical disk space"
+          description: "Disk space is below 5% on {{ $labels.mountpoint }}."
+          
+      # Redis Alerts
+      - alert: RedisDown
+        expr: up{job="redis-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: cache
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache server is not responding."
+          
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: cache
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is above 90%."
+
+  - name: price_history_business
+    rules:
+      # Business Logic Alerts
+      - alert: PriceAnomalyDetected
+        expr: price_history_anomaly_count > 10
+        for: 1m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: "Price anomalies detected"
+          description: "{{ $value }} price anomalies detected in latest import."
+          
+      - alert: SupermarketDataMissing
+        expr: price_history_supermarket_coverage < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: "Supermarket data coverage low"
+          description: "Only {{ $value }}% of expected supermarkets have data."
+          
+      - alert: VolatilityHigh
+        expr: price_history_volatility_products > 50
+        for: 5m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: "High price volatility detected"
+          description: "{{ $value }} products showing high price volatility."

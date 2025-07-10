@@ -3,14 +3,21 @@ import 'config/supabase_config.dart';
 import 'models/product.dart';
 import 'services/product_service.dart';
 import 'widgets/product_card.dart';
+import 'widgets/product_detail_card.dart';
 import 'widgets/barcode_scanner.dart';
 import 'pages/product_comparison_page.dart';
 import 'pages/modern_search_page.dart';
 import 'pages/shopping_lists_page.dart';
+import 'pages/admin_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SupabaseConfig.initialize();
+  
+  // Initialize ProductService with real data
+  print('🔄 Initializing ProductService with real data...');
+  await ProductService.initialize();
+  
   runApp(const BoodschappenApp());
 }
 
@@ -266,6 +273,17 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const AdminPage(),
+            ),
+          );
+        },
+        tooltip: 'Admin',
+        child: const Icon(Icons.admin_panel_settings),
       ),
     );
   }

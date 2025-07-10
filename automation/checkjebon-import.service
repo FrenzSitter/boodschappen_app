@@ -1,0 +1,36 @@
+[Unit]
+Description=CheckjeBon Data Import Service
+Documentation=file:///Users/bigmac/boodschappen_app/IMPORT_README.md
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=%i
+Group=%i
+WorkingDirectory=/Users/bigmac/boodschappen_app
+ExecStart=/Users/bigmac/boodschappen_app/automation/daily_import.sh
+StandardOutput=append:/Users/bigmac/boodschappen_app/logs/systemd_import.log
+StandardError=append:/Users/bigmac/boodschappen_app/logs/systemd_import.log
+TimeoutStartSec=1800
+TimeoutStopSec=30
+
+# Environment variables
+Environment=PYTHONPATH=/Users/bigmac/boodschappen_app
+Environment=LOG_LEVEL=INFO
+EnvironmentFile=-/Users/bigmac/boodschappen_app/.env
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/Users/bigmac/boodschappen_app/logs
+ReadWritePaths=/tmp
+
+# Restart policy
+Restart=on-failure
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target

@@ -1,15 +1,52 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/product.dart';
 import '../config/supabase_config.dart';
+import 'checkjebon_service.dart';
+import 'data_import_service.dart';
+import 'complete_data_import_service.dart';
 
 class ProductService {
   static final SupabaseClient _client = SupabaseConfig.client;
+  static bool _isInitialized = false;
+  
+  /// Initialize the service and import data if needed
+  static Future<void> initialize() async {
+    if (_isInitialized) return;
+    
+    try {
+      print('🔄 Initializing ProductService...');
+      
+      // Initialize database structure
+      await DataImportService.initializeDatabase();
+      
+      // Check if we have products in the database
+      final productsCount = await _client
+          .from('products')
+          .select('id')
+          .count();
+      
+      if (productsCount.count == 0) {
+        print('📦 No products found, importing complete dataset from checkjebon.nl...');
+        final result = await CompleteDataImportService.importCompleteDataset();
+        print('🎉 Import completed: $result');
+      }
+      
+      _isInitialized = true;
+      print('✅ ProductService initialized successfully');
+    } catch (e) {
+      print('❌ Error initializing ProductService: $e');
+      // Continue without initialization - fallback to mock data
+    }
+  }
 
   static Future<List<ProductWithPrices>> searchProducts({
     required SearchFilters filters,
     int limit = 20,
     int offset = 0,
   }) async {
+    // Ensure service is initialized
+    await initialize();
+    
     try {
       // Build the query - eerst basis query
       var query = _client
@@ -148,6 +185,9 @@ class ProductService {
   }
 
   static Future<List<Supermarket>> getSupermarkets() async {
+    // Ensure service is initialized
+    await initialize();
+    
     try {
       final response = await _client
           .from('supermarkets')
@@ -164,6 +204,9 @@ class ProductService {
   }
 
   static Future<List<Category>> getCategories() async {
+    // Ensure service is initialized
+    await initialize();
+    
     try {
       final response = await _client
           .from('categories')
@@ -179,6 +222,9 @@ class ProductService {
   }
 
   static Future<ProductWithPrices?> getProductById(String productId) async {
+    // Ensure service is initialized
+    await initialize();
+    
     try {
       final response = await _client
           .from('products')
@@ -242,6 +288,9 @@ class ProductService {
   }
 
   static Future<ProductWithPrices?> searchProductByBarcode(String barcode) async {
+    // Ensure service is initialized
+    await initialize();
+    
     try {
       final response = await _client
           .from('products')
@@ -307,7 +356,57 @@ class ProductService {
     }
   }
 
+  /// Refresh product data from checkjebon.nl
+  static Future<int> refreshProductData() async {
+    try {
+      print('🔄 Refreshing product data from checkjebon.nl...');
+      return await DataImportService.importProductsFromCheckjebon();
+    } catch (e) {
+      print('❌ Error refreshing product data: $e');
+      return 0;
+    }
+  }
+  
+  /// Import complete dataset from checkjebon.nl GitHub repository
+  static Future<ImportResult> importCompleteDataset() async {
+    try {
+      print('🔄 Importing complete dataset from checkjebon.nl GitHub...');
+      return await CompleteDataImportService.importCompleteDataset();
+    } catch (e) {
+      print('❌ Error importing complete dataset: $e');
+      rethrow;
+    }
+  }
+  
+  /// Search products directly from checkjebon.nl (bypasses database)
+  static Future<List<ProductWithPrices>> searchProductsFromCheckjebon(String query) async {
+    try {
+      final checkjebonProducts = await CheckjebonService.searchProducts(query);
+      
+      // Convert to our ProductWithPrices format
+      final results = <ProductWithPrices>[];
+      
+      for (final checkjebonProduct in checkjebonProducts) {
+        final product = CheckjebonService.convertToProduct(checkjebonProduct, '33333333-3333-3333-3333-333333333333');
+        final price = CheckjebonService.convertToProductPrice(checkjebonProduct, product.id);
+        
+        results.add(ProductWithPrices(
+          product: product,
+          prices: [price],
+        ));
+      }
+      
+      return results.take(20).toList();
+    } catch (e) {
+      print('❌ Error searching products from checkjebon.nl: $e');
+      return [];
+    }
+  }
+
   static Future<List<ProductWithPrices>> getPopularProducts({int limit = 10}) async {
+    // Ensure service is initialized
+    await initialize();
+    
     try {
       final response = await _client
           .from('products')

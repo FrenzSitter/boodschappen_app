@@ -1,0 +1,23 @@
+# Price History System Cron Jobs
+# ===============================
+
+# Daily CheckjeBon import at 6:00 AM
+0 6 * * * /opt/price-history/.venv/bin/python /opt/price-history/import_checkjebon.py >> /opt/price-history/logs/import_cron.log 2>&1
+
+# Monitoring checks every 6 hours
+0 */6 * * * /opt/price-history/.venv/bin/python /opt/price-history/monitoring_system.py >> /opt/price-history/logs/monitoring_cron.log 2>&1
+
+# Daily backup at 2:00 AM
+0 2 * * * /opt/price-history/scripts/backup.sh >> /opt/price-history/logs/backup_cron.log 2>&1
+
+# Weekly maintenance on Sunday at 1:00 AM
+0 1 * * 0 /opt/price-history/.venv/bin/python -c "from monitoring_system import create_monitor; create_monitor().run_data_maintenance()" >> /opt/price-history/logs/maintenance_cron.log 2>&1
+
+# Log rotation daily at midnight
+0 0 * * * /opt/price-history/scripts/rotate_logs.sh >> /opt/price-history/logs/logrotate.log 2>&1
+
+# Health check every 5 minutes
+*/5 * * * * /opt/price-history/scripts/health_check.sh >> /opt/price-history/logs/health_check.log 2>&1
+
+# Cleanup old backups weekly
+0 3 * * 0 /opt/price-history/scripts/cleanup_backups.sh >> /opt/price-history/logs/cleanup.log 2>&1

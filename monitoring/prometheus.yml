@@ -1,0 +1,72 @@
+# Prometheus Configuration for Price History System
+# ================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Price History API
+  - job_name: 'price-history-api'
+    static_configs:
+      - targets: ['price-history-api:8000']
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    honor_labels: true
+    
+  # System metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+    
+  # Redis metrics
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    
+  # Custom application metrics
+  - job_name: 'price-history-metrics'
+    static_configs:
+      - targets: ['price-history-monitor:8001']
+    metrics_path: /metrics
+    scrape_interval: 60s
+    
+  # Backup metrics
+  - job_name: 'backup-metrics'
+    static_configs:
+      - targets: ['backup-service:8002']
+    metrics_path: /metrics
+    scrape_interval: 300s  # 5 minutes
+    
+  # Import job metrics
+  - job_name: 'import-metrics'
+    static_configs:
+      - targets: ['price-history-import:8003']
+    metrics_path: /metrics
+    scrape_interval: 60s
+
+# Remote write configuration (optional)
+# remote_write:
+#   - url: "https://prometheus-remote-write-endpoint/api/v1/receive"
+#     basic_auth:
+#       username: "username"
+#       password: "password"
+
+# Storage configuration
+storage:
+  tsdb:
+    retention.time: 30d
+    retention.size: 10GB
+    path: /prometheus

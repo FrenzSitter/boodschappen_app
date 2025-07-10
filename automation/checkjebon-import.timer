@@ -1,0 +1,20 @@
+[Unit]
+Description=CheckjeBon Import Timer
+Documentation=file:///Users/bigmac/boodschappen_app/IMPORT_README.md
+Requires=checkjebon-import.service
+
+[Timer]
+# Run daily at 3:00 AM
+OnCalendar=*-*-* 03:00:00
+
+# If the system was down, run as soon as possible
+Persistent=true
+
+# Randomize start time by up to 30 minutes to avoid thundering herd
+RandomizedDelaySec=1800
+
+# Send email on failure (requires systemd-email service)
+OnFailure=status-email@%i.service
+
+[Install]
+WantedBy=timers.target

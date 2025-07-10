@@ -1,0 +1,247 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Price History System Overview",
+    "tags": ["price-history", "monitoring"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "System Health Overview",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "price_history_system_health_score",
+            "legendFormat": "Health Score"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 70},
+                {"color": "green", "value": 90}
+              ]
+            },
+            "unit": "percent"
+          }
+        },
+        "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Data Freshness",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "price_history_data_freshness_hours",
+            "legendFormat": "Hours Since Last Import"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 24},
+                {"color": "red", "value": 48}
+              ]
+            },
+            "unit": "h"
+          }
+        },
+        "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "API Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th Percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th Percentile"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Response Time (seconds)",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "Active Alerts",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "ALERTS{alertstate=\"firing\"}",
+            "legendFormat": "Active Alerts"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 5}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 4, "w": 4, "x": 16, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "Import Volume",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "price_history_import_records_processed",
+            "legendFormat": "Records Processed"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Records",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "Data Quality Score",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "price_history_data_quality_score",
+            "legendFormat": "Quality Score"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Score (%)",
+            "min": 0,
+            "max": 100
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 12, "y": 8}
+      },
+      {
+        "id": 7,
+        "title": "Price Anomalies",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "price_history_anomaly_count",
+            "legendFormat": "Anomalies Detected"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Count",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 8,
+        "title": "Backup Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "price_history_backup_hours_since_last",
+            "legendFormat": "Hours Since Last Backup"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 24},
+                {"color": "red", "value": 48}
+              ]
+            },
+            "unit": "h"
+          }
+        },
+        "gridPos": {"h": 4, "w": 4, "x": 12, "y": 16}
+      },
+      {
+        "id": 9,
+        "title": "System Resources",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(cpu_usage_seconds_total[5m]) * 100",
+            "legendFormat": "CPU Usage %"
+          },
+          {
+            "expr": "memory_usage_bytes / memory_total_bytes * 100",
+            "legendFormat": "Memory Usage %"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Usage (%)",
+            "min": 0,
+            "max": 100
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 10,
+        "title": "Redis Cache",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes / redis_memory_max_bytes * 100",
+            "legendFormat": "Memory Usage %"
+          },
+          {
+            "expr": "rate(redis_commands_processed_total[5m])",
+            "legendFormat": "Commands/sec"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Usage",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 12, "y": 24}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "schemaVersion": 16,
+    "version": 0
+  }
+}

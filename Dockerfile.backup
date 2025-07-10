@@ -1,0 +1,49 @@
+# Dockerfile for Backup Service
+# ==============================
+
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    cron \
+    postgresql-client \
+    awscli \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Create backup user
+RUN groupadd -r backup && useradd -r -g backup backup
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backup scripts
+COPY backup/ ./backup/
+COPY logging.conf ./
+
+# Create directories
+RUN mkdir -p /app/backups /app/logs && \
+    chown -R backup:backup /app
+
+# Switch to backup user
+USER backup
+
+# Copy and set up cron job
+COPY --chown=backup:backup cron/backup-cron /etc/cron.d/backup-cron
+RUN chmod 0644 /etc/cron.d/backup-cron && \
+    crontab /etc/cron.d/backup-cron
+
+# Health check
+HEALTHCHECK --interval=300s --timeout=30s --start-period=10s --retries=3 \
+    CMD python -c "import backup.health_check; backup.health_check.check()" || exit 1
+
+# Default command
+CMD ["python", "-m", "backup.scheduler"]
