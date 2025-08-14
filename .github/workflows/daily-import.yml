@@ -1,0 +1,272 @@
+name: Daily CheckjeBon Import
+
+on:
+  schedule:
+    # Run at 10:00 AM CET/CEST (Amsterdam timezone)
+    # Using 8:00 AM UTC during winter (CET = UTC+1)
+    # Using 9:00 AM UTC during summer (CEST = UTC+2)
+    # GitHub Actions uses UTC, so we schedule for 8:00 AM UTC
+    # Note: This will be 9:00 AM local time during winter and 10:00 AM during summer
+    # For precise timezone handling, we'll use the timezone conversion in the job
+    - cron: '0 8 *' # 8:00 AM UTC
+  workflow_dispatch: # Allow manual triggering for testing
+    inputs:
+      force_import:
+        description: 'Force import even if health check fails'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  PRODUCTION_URL: https://shoplijst-api-clean-2raak9zlc-epicstories-projects.vercel.app
+  HEALTH_ENDPOINT: /api/health
+  IMPORT_ENDPOINT: /api/import-checkjebon
+  TIMEZONE: Europe/Amsterdam
+
+jobs:
+  daily-import:
+    name: Execute Daily CheckjeBon Import
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Check Current Time in Amsterdam
+        id: time-check
+        run: |
+          # Install tzdata for timezone support
+          sudo apt-get update && sudo apt-get install -y tzdata
+          
+          # Get current time in Amsterdam timezone
+          CURRENT_TIME=$(TZ=Europe/Amsterdam date '+%Y-%m-%d %H:%M:%S %Z')
+          CURRENT_HOUR=$(TZ=Europe/Amsterdam date '+%H')
+          
+          echo "Current Amsterdam time: $CURRENT_TIME"
+          echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
+          echo "current_hour=$CURRENT_HOUR" >> $GITHUB_OUTPUT
+          
+          # Check if we're in the correct hour (10 AM) for scheduled runs
+          if [[ "${{ github.event_name }}" == "schedule" ]] && [[ "$CURRENT_HOUR" != "10" ]]; then
+            echo "Warning: Scheduled to run at 10 AM Amsterdam time, but current hour is $CURRENT_HOUR"
+          fi
+
+      - name: Health Check
+        id: health-check
+        run: |
+          echo "🏥 Performing health check..."
+          
+          # Make health check request
+          HEALTH_RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Daily-Import/1.0" \
+            "${{ env.PRODUCTION_URL }}${{ env.HEALTH_ENDPOINT }}")
+          
+          # Extract HTTP status and body
+          HTTP_STATUS=$(echo $HEALTH_RESPONSE | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+          BODY=$(echo $HEALTH_RESPONSE | sed -e 's/HTTPSTATUS:.*//g')
+          
+          echo "HTTP Status: $HTTP_STATUS"
+          echo "Response Body: $BODY"
+          
+          # Store results for next steps
+          echo "http_status=$HTTP_STATUS" >> $GITHUB_OUTPUT
+          echo "response_body=$BODY" >> $GITHUB_OUTPUT
+          
+          # Check if health check passed
+          if [[ $HTTP_STATUS -eq 200 ]]; then
+            echo "✅ Health check passed"
+            
+            # Validate response contains expected fields
+            if echo "$BODY" | jq -e '.status == "healthy" and .database == "connected" and .product_count' > /dev/null 2>&1; then
+              PRODUCT_COUNT=$(echo "$BODY" | jq -r '.product_count')
+              echo "✅ Database connected with $PRODUCT_COUNT products"
+              echo "health_status=healthy" >> $GITHUB_OUTPUT
+              echo "product_count=$PRODUCT_COUNT" >> $GITHUB_OUTPUT
+            else
+              echo "⚠️ Health check returned 200 but response format is unexpected"
+              echo "health_status=warning" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "❌ Health check failed with status $HTTP_STATUS"
+            echo "health_status=failed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate Health Status
+        if: steps.health-check.outputs.health_status == 'failed' && github.event.inputs.force_import != 'true'
+        run: |
+          echo "❌ Health check failed and force_import is not enabled"
+          echo "Aborting import process"
+          echo "To force import despite health check failure, run workflow manually with force_import=true"
+          exit 1
+
+      - name: Execute Import
+        id: import
+        run: |
+          echo "🚀 Starting CheckjeBon import..."
+          echo "Time: ${{ steps.time-check.outputs.current_time }}"
+          
+          if [[ "${{ steps.health-check.outputs.health_status }}" == "failed" ]]; then
+            echo "⚠️ Proceeding with import despite health check failure (force_import=true)"
+          fi
+          
+          # Execute import request
+          IMPORT_RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.IMPORT_SECRET_TOKEN }}" \
+            -H "User-Agent: GitHub-Actions-Daily-Import/1.0" \
+            -d '{"source":"github-actions","trigger":"daily-scheduled","timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' \
+            "${{ env.PRODUCTION_URL }}${{ env.IMPORT_ENDPOINT }}")
+          
+          # Extract HTTP status and body
+          HTTP_STATUS=$(echo $IMPORT_RESPONSE | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+          BODY=$(echo $IMPORT_RESPONSE | sed -e 's/HTTPSTATUS:.*//g')
+          
+          echo "HTTP Status: $HTTP_STATUS"
+          echo "Response Body: $BODY"
+          
+          # Store results
+          echo "http_status=$HTTP_STATUS" >> $GITHUB_OUTPUT
+          echo "response_body=$BODY" >> $GITHUB_OUTPUT
+          
+          # Determine success/failure
+          if [[ $HTTP_STATUS -ge 200 ]] && [[ $HTTP_STATUS -lt 300 ]]; then
+            echo "✅ Import completed successfully"
+            echo "import_status=success" >> $GITHUB_OUTPUT
+            
+            # Try to extract import statistics if available
+            if echo "$BODY" | jq -e '.imported_count' > /dev/null 2>&1; then
+              IMPORTED_COUNT=$(echo "$BODY" | jq -r '.imported_count')
+              echo "📊 Imported $IMPORTED_COUNT items"
+              echo "imported_count=$IMPORTED_COUNT" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "❌ Import failed with status $HTTP_STATUS"
+            echo "import_status=failed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post-Import Health Check
+        id: post-health-check
+        if: steps.import.outputs.import_status == 'success'
+        run: |
+          echo "🔍 Performing post-import health check..."
+          
+          # Wait a moment for the system to stabilize
+          sleep 5
+          
+          # Make health check request
+          HEALTH_RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Daily-Import/1.0" \
+            "${{ env.PRODUCTION_URL }}${{ env.HEALTH_ENDPOINT }}")
+          
+          # Extract HTTP status and body
+          HTTP_STATUS=$(echo $HEALTH_RESPONSE | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+          BODY=$(echo $HEALTH_RESPONSE | sed -e 's/HTTPSTATUS:.*//g')
+          
+          echo "Post-import HTTP Status: $HTTP_STATUS"
+          echo "Post-import Response: $BODY"
+          
+          if [[ $HTTP_STATUS -eq 200 ]]; then
+            if echo "$BODY" | jq -e '.product_count' > /dev/null 2>&1; then
+              NEW_PRODUCT_COUNT=$(echo "$BODY" | jq -r '.product_count')
+              OLD_PRODUCT_COUNT=${{ steps.health-check.outputs.product_count }}
+              
+              echo "📊 Product count after import: $NEW_PRODUCT_COUNT"
+              echo "📊 Product count before import: $OLD_PRODUCT_COUNT"
+              
+              if [[ "$NEW_PRODUCT_COUNT" -gt "$OLD_PRODUCT_COUNT" ]]; then
+                PRODUCTS_ADDED=$((NEW_PRODUCT_COUNT - OLD_PRODUCT_COUNT))
+                echo "✅ Import successful: $PRODUCTS_ADDED new products added"
+              else
+                echo "ℹ️ No new products added (this might be expected)"
+              fi
+              
+              echo "post_import_product_count=$NEW_PRODUCT_COUNT" >> $GITHUB_OUTPUT
+            else
+              echo "⚠️ Could not determine product count from post-import health check"
+            fi
+          else
+            echo "⚠️ Post-import health check failed with status $HTTP_STATUS"
+          fi
+
+      - name: Generate Summary Report
+        if: always()
+        run: |
+          echo "# Daily CheckjeBon Import Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Execution Time:** ${{ steps.time-check.outputs.current_time }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Health check status
+          echo "## Pre-Import Health Check" >> $GITHUB_STEP_SUMMARY
+          case "${{ steps.health-check.outputs.health_status }}" in
+            "healthy")
+              echo "✅ **Status:** Healthy" >> $GITHUB_STEP_SUMMARY
+              echo "📊 **Product Count:** ${{ steps.health-check.outputs.product_count }}" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "warning")
+              echo "⚠️ **Status:** Warning - Unexpected response format" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "failed")
+              echo "❌ **Status:** Failed" >> $GITHUB_STEP_SUMMARY
+              echo "**HTTP Status:** ${{ steps.health-check.outputs.http_status }}" >> $GITHUB_STEP_SUMMARY
+              ;;
+          esac
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Import status
+          echo "## Import Execution" >> $GITHUB_STEP_SUMMARY
+          case "${{ steps.import.outputs.import_status }}" in
+            "success")
+              echo "✅ **Status:** Successful" >> $GITHUB_STEP_SUMMARY
+              if [[ -n "${{ steps.import.outputs.imported_count }}" ]]; then
+                echo "📊 **Items Imported:** ${{ steps.import.outputs.imported_count }}" >> $GITHUB_STEP_SUMMARY
+              fi
+              ;;
+            "failed")
+              echo "❌ **Status:** Failed" >> $GITHUB_STEP_SUMMARY
+              echo "**HTTP Status:** ${{ steps.import.outputs.http_status }}" >> $GITHUB_STEP_SUMMARY
+              echo "**Error Response:** \`${{ steps.import.outputs.response_body }}\`" >> $GITHUB_STEP_SUMMARY
+              ;;
+            *)
+              echo "⚪ **Status:** Not executed" >> $GITHUB_STEP_SUMMARY
+              ;;
+          esac
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Post-import health check
+          if [[ -n "${{ steps.post-health-check.outputs.post_import_product_count }}" ]]; then
+            echo "## Post-Import Health Check" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Status:** Healthy" >> $GITHUB_STEP_SUMMARY
+            echo "📊 **Final Product Count:** ${{ steps.post-health-check.outputs.post_import_product_count }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Handle Import Failure
+        if: steps.import.outputs.import_status == 'failed'
+        run: |
+          echo "❌ Import failed - creating failure indicators"
+          
+          # Log detailed error information
+          echo "Failed import details:"
+          echo "- HTTP Status: ${{ steps.import.outputs.http_status }}"
+          echo "- Response: ${{ steps.import.outputs.response_body }}"
+          echo "- Time: ${{ steps.time-check.outputs.current_time }}"
+          echo "- Health Check Status: ${{ steps.health-check.outputs.health_status }}"
+          
+          # Exit with error to trigger failure notifications
+          exit 1
+
+      - name: Success Notification
+        if: steps.import.outputs.import_status == 'success'
+        run: |
+          echo "🎉 Daily CheckjeBon import completed successfully!"
+          echo "✅ All systems operational"
+          
+          # Log success details
+          echo "Success details:"
+          echo "- Time: ${{ steps.time-check.outputs.current_time }}"
+          echo "- Pre-import products: ${{ steps.health-check.outputs.product_count }}"
+          if [[ -n "${{ steps.post-health-check.outputs.post_import_product_count }}" ]]; then
+            echo "- Post-import products: ${{ steps.post-health-check.outputs.post_import_product_count }}"
+          fi
